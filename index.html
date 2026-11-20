@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Software for security and systems installers, by Ivula Technologies. Live demos.">
+<style>[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Ivula Secure Ops</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* Layout: a night-shift control room. Video hero, then panels that behave like the real screens a technician, guard or office manager would use. Single dark look by choice. */
+:root{
+  --bg:#050a1a; --panel:#0b1430; --panel2:#0f1b3d; --line:#1d2b55; --line2:#2a3c70;
+  --fg:#e7ecff; --mute:#93a0c8; --dim:#6a779f;
+  --cyan:#13c8e8; --cyan2:#0aa9df; --navy:#0b165a;
+  --ok:#34d399; --warn:#f5b841; --bad:#f87171;
+  --display:"Space Grotesk",Inter,system-ui,sans-serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;margin:0}
+a{color:var(--cyan)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.mute{color:var(--mute)} .mono{font-family:var(--mono)} .num{font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--panel2);padding:9px 14px;border-radius:10px;cursor:pointer;text-decoration:none;color:var(--fg);font-weight:600;font-size:14px;white-space:nowrap}
+.btn:hover{border-color:var(--cyan)}
+.btn.pri{background:var(--cyan);border-color:var(--cyan);color:#04122b}
+.btn.pri:hover{background:#4fdcf3}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn.danger{background:#3a1220;border-color:#7a2235;color:#ffd5db}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+input,select,textarea{background:#081029;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+label{display:grid;gap:4px;font-size:13px;color:var(--mute)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+.pill:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.ok{color:var(--ok);border-color:#1d5e48;background:#0b2a22}
+.warn{color:var(--warn);border-color:#6b5317;background:#2a2109}
+.bad{color:var(--bad);border-color:#6d2630;background:#2c0f15}
+.info{color:var(--cyan);border-color:#185a6b;background:#08243a}
+
+/* header */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:rgba(5,10,26,.92)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(5,10,26,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:18px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-family:var(--display);font-weight:700;font-size:17px;flex:none}
+.brand svg{width:26px;height:30px}
+.brand small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--mute);font-weight:400;margin-top:-3px}
+nav.links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1}
+nav.links::-webkit-scrollbar{display:none}
+nav.links a{color:var(--mute);text-decoration:none;font-size:14px;font-weight:500;padding:7px 11px;border-radius:8px;white-space:nowrap}
+nav.links a:hover{color:var(--fg)}
+nav.links a.on{color:var(--fg);background:var(--panel2)}
+nav.links a.star{color:var(--cyan)}
+
+/* hero */
+.hero{position:relative;overflow:hidden;min-height:620px;display:flex;align-items:flex-end;border-bottom:1px solid var(--line)}
+.hero video,.hero .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero .shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,10,26,.94) 0%,rgba(5,10,26,.72) 45%,rgba(5,10,26,.25) 100%),linear-gradient(0deg,rgba(5,10,26,1) 0%,rgba(5,10,26,0) 40%)}
+.hero .wrap{position:relative;padding-block:120px 64px;width:100%}
+.hero h1{font-size:clamp(36px,6vw,66px);line-height:1.02;max-width:12.5em;margin:14px 0 18px}
+.hero h1 em{font-style:normal;color:var(--cyan)}
+.hero p.lead{font-size:clamp(16px,1.6vw,19px);max-width:36em;color:#c6d0f0;margin:0 0 26px}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
+.rec{position:absolute;top:84px;right:max(16px,env(safe-area-inset-right,0px));font-family:var(--mono);font-size:12px;color:#c9d6ff;display:flex;gap:14px;align-items:center;background:rgba(5,10,26,.55);padding:6px 10px;border-radius:8px;border:1px solid var(--line)}
+.rec b{color:var(--bad);display:flex;align-items:center;gap:6px}
+.rec b:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--bad);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.rec b:before{animation:none}}
+
+section.block{padding-block:72px}
+.sec-head{display:grid;gap:10px;margin-bottom:30px;max-width:46em}
+.sec-head h2{font-size:clamp(26px,3.4vw,38px);line-height:1.1}
+
+/* main offer */
+.offer{border:1px solid var(--line2);border-radius:20px;background:radial-gradient(120% 140% at 100% 0%,#0f2a55 0%,var(--panel) 55%);padding:34px;display:grid;grid-template-columns:1.25fr 1fr;gap:34px}
+.offer h2{font-size:clamp(26px,3.2vw,36px);line-height:1.1;margin:10px 0 12px}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 26px}
+.part{border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(5,10,26,.4)}
+.part b{display:block;font-size:15px;margin-bottom:3px}
+.part span{color:var(--mute);font-size:14px}
+.pilot{border:1px solid #185a6b;border-radius:16px;background:#071d33;padding:24px;display:grid;gap:14px;align-content:start}
+.pilot h3{font-size:22px}
+.weeks{display:grid;gap:10px;margin:4px 0 6px}
+.week{display:grid;grid-template-columns:72px 1fr;gap:10px;font-size:14px}
+.week .mono{color:var(--cyan);font-size:12px;padding-top:2px}
+
+/* solution cards */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.sol{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:22px;display:grid;gap:10px;align-content:start;text-decoration:none;color:var(--fg);transition:border-color .2s,transform .2s}
+.sol:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.sol .ic{width:42px;height:42px;border-radius:11px;background:#08243a;display:grid;place-items:center}
+.sol .ic svg{width:22px;height:22px;stroke:var(--cyan);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sol h3{font-size:20px}
+.sol ul{margin:0;padding-left:18px;color:var(--mute);font-size:14px}
+.sol .go{color:var(--cyan);font-weight:600;font-size:14px;margin-top:4px}
+
+.contact{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;border:1px solid var(--line2);border-radius:18px;padding:26px;background:var(--panel)}
+.contact img{width:84px;height:84px;border-radius:50%;border:2px solid var(--cyan)}
+.contact .rows{display:grid;gap:2px;font-size:15px}
+.contact .rows span{color:var(--mute);font-family:var(--mono);font-size:12px;display:inline-block;width:56px}
+footer{border-top:1px solid var(--line);padding-block:26px;color:var(--dim);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* demo pages */
+.page-head{padding-block:44px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0a1636 0%,var(--bg) 100%)}
+.page-head h1{font-size:clamp(28px,4vw,44px);line-height:1.08;margin:10px 0 10px}
+.page-head p{max-width:46em;color:#c6d0f0;margin:0}
+.demo-note{display:inline-flex;gap:8px;align-items:center;margin-top:16px;font-size:13px;color:var(--warn);font-family:var(--mono)}
+.demo{padding-block:28px 64px;display:grid;gap:18px}
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--panel);min-width:0}
+.panel>.ph{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel>.ph h3{font-size:17px}
+.panel>.pb{padding:18px}
+.cols{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:600;color:var(--mute);text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num{white-space:nowrap}
+td .sub{display:block;color:var(--mute);font-size:12.5px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .full{grid-column:1/-1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(5,10,26,.35)}
+.stat b{display:block;font-family:var(--display);font-size:clamp(18px,2vw,24px);white-space:nowrap;font-variant-numeric:tabular-nums}
+.stat span{color:var(--mute);font-size:13px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line2);background:transparent;border-radius:999px;padding:6px 14px;cursor:pointer;font-size:14px;color:var(--mute)}
+.tabs button.on{background:var(--cyan);border-color:var(--cyan);color:#04122b;font-weight:600}
+.empty{color:var(--dim);font-size:14px;padding:6px 0}
+
+/* phone */
+.phone{width:100%;max-width:370px;margin:0 auto;border:10px solid #0d1226;outline:1px solid var(--line2);border-radius:36px;background:#f4f6fb;color:#121a33;overflow:hidden;height:700px;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.phone .bar{background:#0b165a;color:#fff;padding:14px 16px 12px;display:flex;align-items:center;gap:10px}
+.phone .bar b{font-family:var(--display);font-size:16px}
+.phone .bar small{display:block;font-size:11.5px;color:#b9c4f0}
+.phone .bar button{background:transparent;border:0;color:#fff;font-size:20px;cursor:pointer;padding:0 6px 0 0}
+.phone .scr{flex:1;overflow-y:auto;padding:14px}
+.phone .job{background:#fff;border:1px solid #e1e6f2;border-radius:14px;padding:12px 13px;margin-bottom:10px;cursor:pointer;display:grid;gap:4px;width:100%;text-align:left;font:inherit;color:inherit}
+.phone .job:hover{border-color:#0aa9df}
+.phone .job .t{font-weight:600;font-size:14.5px}
+.phone .job .s{font-size:12.5px;color:#5a6684}
+.phone .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;justify-self:start}
+.tag.todo{background:#e8f6fc;color:#05779c}.tag.done{background:#e3f7ee;color:#0f7a4f}.tag.urgent{background:#fdecee;color:#b4232f}
+.phone h4{margin:14px 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#5a6684}
+.phone .chk{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid #e1e6f2;border-radius:10px;padding:9px 10px;margin-bottom:6px;font-size:14px;cursor:pointer}
+.phone .chk input{width:18px;height:18px;margin-top:1px;accent-color:#0aa9df;flex:none}
+.phone .photos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.phone .ph{aspect-ratio:4/3;border-radius:10px;border:1.5px dashed #b8c3dc;display:grid;place-items:center;font-size:12.5px;color:#5a6684;background:#fff;overflow:hidden;position:relative;cursor:pointer;text-align:center;padding:4px}
+.phone .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.phone .ph input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.phone canvas{width:100%;height:120px;background:#fff;border:1px solid #e1e6f2;border-radius:10px;touch-action:none;display:block}
+.phone .pbtn{width:100%;margin-top:12px;background:#0b165a;color:#fff;border:0;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;font-size:15px}
+.phone .pbtn.alt{background:#fff;color:#0b165a;border:1px solid #c9d2e8}
+.phone .pbtn[disabled]{opacity:.4;cursor:not-allowed}
+.phone .mat{display:grid;grid-template-columns:1fr 64px auto;gap:6px;margin-bottom:6px}
+.phone .mat select,.phone .mat input{background:#fff;border:1px solid #d5dcec;color:#121a33;padding:7px 8px;font-size:13.5px}
+.phone .mat button{border:1px solid #d5dcec;background:#fff;border-radius:8px;cursor:pointer;padding:0 10px}
+.phone ul.mats{list-style:none;margin:0;padding:0;font-size:13.5px}
+.phone ul.mats li{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #e1e6f2}
+.phone .okbox{background:#e3f7ee;border:1px solid #a7e3c7;color:#0f5e3e;border-radius:12px;padding:12px;font-size:14px}
+
+/* report & certificate documents */
+.doc{background:#fff;color:#141b33;border-radius:12px;padding:26px;font-size:14px}
+.doc h3{font-family:var(--display);font-size:22px;color:#0b165a}
+.doc .dh{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #0aa9df;padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap}
+.doc .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.doc .kpis div{background:#f2f6fc;border-radius:10px;padding:10px}
+.doc .kpis b{display:block;font-size:22px;font-family:var(--display);color:#0b165a;font-variant-numeric:tabular-nums}
+.doc .kpis span{font-size:12px;color:#5a6684}
+.doc table th{color:#5a6684;border-color:#e1e6f2}.doc table td{border-color:#e1e6f2}
+.doc .sig{font-family:"Brush Script MT","Segoe Script",cursive;font-size:26px;color:#0b165a}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:#0f1b3d;border:1px solid var(--cyan);color:var(--fg);padding:11px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;z-index:50;max-width:calc(100% - 32px);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+/* monitoring */
+.alarm{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px;background:rgba(5,10,26,.4)}
+.alarm.live{border-color:#7a2235;background:#1d0b14;animation:pulse 1.6s infinite}
+.alarm.sos{border-color:var(--bad);background:#3a0c16}
+@keyframes pulse{50%{box-shadow:0 0 0 4px rgba(248,113,113,.15)}}
+@media (prefers-reduced-motion:reduce){.alarm.live{animation:none}}
+.alarm .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.timer{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--warn)}
+.cp{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.cp:last-child{border-bottom:0}
+.cp i{width:22px;height:22px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;font-style:normal;font-size:12px;flex:none}
+.cp.done i{border-color:var(--ok);background:#0b2a22;color:var(--ok)}
+.sosbtn{width:100%;background:#b4232f;border:0;color:#fff;font-weight:800;letter-spacing:.12em;padding:16px;border-radius:14px;cursor:pointer;font-size:16px}
+
+/* fence chart */
+.bars{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:end;height:220px;padding:10px 0 0;position:relative}
+.bars .b{display:grid;gap:6px;justify-items:center;align-content:end;height:100%}
+.bars .b i{width:100%;max-width:46px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--cyan),#0a6f9a);display:block}
+.bars .b.low i{background:linear-gradient(180deg,var(--bad),#7a2235)}
+.bars .b span{font-size:12px;color:var(--mute);text-align:center}
+.bars .b b{font-family:var(--mono);font-size:12.5px}
+.thr{position:absolute;left:0;right:0;border-top:1.5px dashed var(--warn)}
+.thr span{position:absolute;right:0;top:-18px;font-size:11.5px;color:var(--warn);font-family:var(--mono)}
+
+.pass{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:#fff;color:#141b33;border-radius:14px;padding:16px}
+.pass .qr{width:132px;height:132px}
+.pass .qr img,.pass .qr canvas{width:132px!important;height:132px!important}
+.pass b{font-family:var(--display);font-size:18px;color:#0b165a}
+.pass .code{font-family:var(--mono);font-size:20px;letter-spacing:.12em;color:#0b165a}
+
+.wa{background:#0b141a;border-radius:14px;padding:16px;display:grid;gap:8px}
+.wa .msg{background:#005c4b;color:#e9fdf6;border-radius:10px 10px 2px 10px;padding:10px 12px;justify-self:end;max-width:90%;white-space:pre-wrap;font-size:14px}
+.wa .who{font-size:12px;color:#8aa;}
+
+@media (max-width:960px){
+  .offer,.cols,.cols2{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .stats,.doc .kpis{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .grid3,.parts,.form{grid-template-columns:1fr}
+  .hero{min-height:560px}
+  .hero .wrap{padding-block:100px 40px}
+  .rec{display:none}
+  .offer{padding:22px}
+  .contact{grid-template-columns:1fr;text-align:left}
+  .bars{gap:5px}
+  .pass{grid-template-columns:1fr;justify-items:start}
+  section.block{padding-block:52px}
+}
+</style>
+
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="#home" aria-label="Ivula Secure Ops home">
+    <svg viewBox="80 15 120 155" aria-hidden="true"><defs><linearGradient id="g" x1="84" y1="20" x2="200" y2="152" gradientUnits="userSpaceOnUse"><stop stop-color="#13C8E8"/><stop offset="1" stop-color="#0AA9DF"/></linearGradient></defs><circle cx="128" cy="34" r="16" fill="url(#g)"/><path d="M102 66H132V142L108 120V98L84 104L102 66Z" fill="url(#g)"/><path d="M170 66V94L132 132V112L170 66Z" fill="url(#g)"/><path d="M196 104L136 164L124 152L150 118L196 104Z" fill="url(#g)"/></svg>
+    <span>Ivula Secure Ops<small>BY IVULA TECHNOLOGIES</small></span>
+  </a>
+  <nav class="links" id="nav">
+    <a href="#home">Overview</a>
+    <a href="#service" class="star">Service &amp; Maintenance</a>
+    <a href="#cctv">IP CCTV</a>
+    <a href="#access">Access control</a>
+    <a href="#fire">Fire alarms</a>
+    <a href="#fence">Electric fences</a>
+    <a href="#monitoring">Monitoring</a>
+    <a href="#business">Quotes &amp; website</a>
+  </nav>
+</div></header>
+
+<main id="app"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer><div class="wrap">
+  <span>Ivula Technologies · Nairobi · ivulatechnologies.com</span>
+  <span>Everything in these demos is sample data, for illustration.</span>
+</div></footer>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), app=$('#app');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kes=n=>'KES '+Math.round(n).toLocaleString('en-KE');
+const pad=n=>String(n).padStart(2,'0');
+const now=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+const today=()=>new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+const month=()=>new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800)}
+const rid=(p)=>p+'-'+Math.floor(1000+Math.random()*9000);
+const ICON={
+ service:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+ cctv:'<path d="M3 7l13-3 2 6-13 3z"/><path d="M8 12l1 4h4"/><path d="M3 20v-4h3"/><path d="M18 9l3-1"/>',
+ access:'<rect x="6" y="3" width="12" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 17h6"/>',
+ fire:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 3 4 1-2 0-5 0-7z"/>',
+ fence:'<path d="M5 4v16M12 4v16M19 4v16M3 8h18M3 16h18"/>',
+ monitoring:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+ business:'<path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/>'
+};
+const ic=k=>`<div class="ic"><svg viewBox="0 0 24 24">${ICON[k]}</svg></div>`;
+
+/* ---------------- shared sample data ---------------- */
+const S={
+ techs:['Brian Otieno','Faith Wanjiru','Kevin Mutua'],
+ jobs:[
+  {id:'JC-2041',title:'Quarterly CCTV service',client:'Riverside Apartments',site:'Riverside Dr, Kilimani',time:'08:30',type:'service',tasks:['Clean all camera lenses (16)','Check every camera view and night vision','Check NVR recording: 30 days kept','Test UPS backup on NVR and switch'],done:false},
+  {id:'JC-2042',title:'Gate motor not closing',client:'Karen Villa 14',site:'Karen Rd, Karen',time:'11:00',type:'urgent',tasks:['Inspect gate motor and limit switches','Check rack and pinion alignment','Test remote and keypad','Test safety beam'],done:false},
+  {id:'JC-2043',title:'Fire alarm 6-month inspection',client:'Westlands Office Park',site:'Waiyaki Way, Westlands',time:'14:30',type:'service',tasks:['Test fire panel and batteries','Test 2 detectors per zone','Test manual call points','Check sounders in every block'],done:false}
+ ],
+ materials:[['Cat6 cable (m)',60],['RJ45 connectors',25],['12V 7Ah battery',3200],['Gate motor capacitor',1800],['Smoke detector head',2900]],
+ contracts:[
+  {client:'Riverside Apartments',site:'Kilimani',plan:'CCTV care · 4 visits/yr',fee:12500,next:'12 Dec',status:'paid',phone:'0722 ••• 418'},
+  {client:'Karen Villa 14',site:'Karen',plan:'Gate + fence care · 4 visits/yr',fee:6500,next:'03 Dec',status:'due',phone:'0711 ••• 902'},
+  {client:'Westlands Office Park',site:'Westlands',plan:'Fire + CCTV care · 6 visits/yr',fee:28000,next:'Today',status:'overdue',phone:'0733 ••• 115'},
+  {client:'Mombasa Rd Warehouse',site:'Industrial Area',plan:'Fence + monitoring · 12 visits/yr',fee:35000,next:'28 Nov',status:'paid',phone:'0720 ••• 664'},
+  {client:'St. Mary’s Academy',site:'Lang’ata',plan:'CCTV + access care · 4 visits/yr',fee:18000,next:'09 Dec',status:'overdue',phone:'0701 ••• 237'}
+ ],
+ history:[
+  {date:'04 Nov',client:'Riverside Apartments',what:'Camera 7 replaced (water damage)',tech:'Faith Wanjiru'},
+  {date:'11 Nov',client:'Westlands Office Park',what:'Fire panel battery replaced',tech:'Kevin Mutua'},
+  {date:'15 Nov',client:'Mombasa Rd Warehouse',what:'Fence zone 3 earth spike re-driven',tech:'Brian Otieno'},
+  {date:'17 Nov',client:'Riverside Apartments',what:'NVR firmware updated, passwords changed',tech:'Brian Otieno'}
+ ]
+};
+
+/* ---------------- routing ---------------- */
+const pages={home,service,cctv,access,fire,fence,monitoring,business};
+function route(){
+  const k=(location.hash||'#home').slice(1);const key=pages[k]?k:'home';
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+key));
+  const on=document.querySelector('#nav a.on');if(on)on.scrollIntoView({block:'nearest',inline:'center'});
+  cleanup.forEach(f=>f());cleanup=[];
+  app.innerHTML='';pages[key]();window.scrollTo(0,0);
+}
+let cleanup=[];
+window.addEventListener('hashchange',route);
+
+function head(eye,title,lead){return `<div class="page-head"><div class="wrap"><div class="eyebrow">${eye}</div><h1>${title}</h1><p>${lead}</p><div class="demo-note">● Live demo · tap anything · sample data</div></div></div>`}
+
+/* ---------------- HOME ---------------- */
+function home(){
+ app.innerHTML=`
+ <section class="hero">
+  <img class="poster" src="poster.jpg" alt="">
+  <video autoplay muted loop playsinline poster="poster.jpg" aria-hidden="true"><source src="hero.mp4" type="video/mp4"></video>
+  <div class="shade"></div>
+  <div class="rec"><b>LIVE</b><span>SITE 04 · PERIMETER</span><span id="clock" class="num"></span></div>
+  <div class="wrap">
+   <div class="eyebrow">Software for security and systems installers</div>
+   <h1>Every site you protect, <em>run from one system.</em></h1>
+   <p class="lead">You install IP CCTV, access control, fire alarms, electric fences and perimeter security. Ivula builds the software that keeps every one of those sites serviced, reported on and paid for.</p>
+   <div class="ctas"><a class="btn pri" href="#service">Try the main demo</a><a class="btn" href="#solutions" data-scroll="solutions">See all solutions</a></div>
+  </div>
+ </section>
+
+ <section class="block"><div class="wrap">
+  <div class="offer">
+   <div>
+    <div class="eyebrow">Start here</div>
+    <h2>The Service &amp; Maintenance System</h2>
+    <p class="mute" style="margin:0;max-width:36em">Most of your income after installation comes from looking after sites. This system makes sure every visit happens, every fault is fixed and recorded, every contract is billed, and every client can see what they are paying for.</p>
+    <div class="parts">
+     <div class="part"><b>Technician job cards</b><span>Jobs on each technician’s phone, checklists, before and after photos, materials, client signature.</span></div>
+     <div class="part"><b>Maintenance contracts</b><span>Every client’s plan, visit schedule and next due date in one list.</span></div>
+     <div class="part"><b>M-Pesa billing</b><span>Payment requests and reminders go out on their own. Paid contracts update by themselves.</span></div>
+     <div class="part"><b>Monthly client reports</b><span>Each client gets a clear report of visits, faults fixed and response times.</span></div>
+    </div>
+    <a class="btn pri" href="#service">Open the demo</a>
+   </div>
+   <div class="pilot">
+    <div class="eyebrow">The 30-day pilot</div>
+    <h3>Your existing 10 to 20 sites, running on it within a month.</h3>
+    <div class="weeks">
+     <div class="week"><span class="mono">WEEK 1</span><span>We load your client sites, equipment and maintenance contracts.</span></div>
+     <div class="week"><span class="mono">WEEK 2</span><span>Your technicians get the app and a short training on site.</span></div>
+     <div class="week"><span class="mono">WEEKS 3–4</span><span>Real jobs and real billing run through the system. We fix anything that gets in the way.</span></div>
+     <div class="week"><span class="mono">DAY 30</span><span>Your clients receive their first monthly report. We review the results together.</span></div>
+    </div>
+    <p class="mute" style="margin:0;font-size:14px">A fixed-price pilot. You keep everything set up, and decide on the rest after you have seen it working.</p>
+   </div>
+  </div>
+ </div></section>
+
+ <section class="block" id="solutions" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">A solution for each service you offer</div><h2>Built around the work you already sell.</h2><p class="mute" style="margin:0">Each one has a working demo. Open any of them and try it.</p></div>
+  <div class="grid3">
+   ${card('cctv','IP CCTV',['Register of every camera, NVR and IP address','Fault tickets and footage requests from clients','Health-check visit reminders'])}
+   ${card('access','Access control',['Visitor passes with QR codes','Staff attendance from your readers','Lost card blocking in one tap'])}
+   ${card('fire','Fire alarm systems',['Digital inspection checklists','Signed service certificates','Reminders before servicing falls due'])}
+   ${card('fence','Electric fences',['Voltage and earth readings per zone','Low-voltage alerts and call-outs','Energiser and battery reminders'])}
+   ${card('monitoring','Perimeter security and monitoring',['Control room alarm log with response times','Guard patrol checkpoints and SOS','Incident reports for each client'])}
+   ${card('business','Quotes, website and payments',['Quotes clients approve and pay a deposit on','Website quote requests to WhatsApp','Google profile and local search'])}
+  </div>
+ </div></section>
+
+ <section class="block" style="padding-top:0"><div class="wrap">
+  <div class="contact">
+   <img src="bius.png" alt="Bius Michael Joseph">
+   <div><h3 style="font-size:22px">Bius Michael Joseph</h3><div class="mute" style="margin-bottom:8px">Founder &amp; CEO, Ivula Technologies</div>
+    <div class="rows"><div><span>EMAIL</span>info@ivulatechnologies.com</div><div><span>WEB</span>ivulatechnologies.com</div></div></div>
+   <a class="btn pri" href="https://ivulatechnologies.com/book" target="_blank" rel="noopener">Book a call</a>
+  </div>
+  <p class="mute" style="font-size:13.5px;margin:16px 4px 0">Ivula Technologies is a software studio founded in Nairobi in 2022. We build and run software for clients in Kenya and the US, including practice management for a Kenyan law firm, volunteer management for churches, and online proposals with e-signatures and deposits.</p>
+ </div></section>`;
+ const v=app.querySelector('video');
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches&&v){v.removeAttribute('autoplay');v.pause()}
+ if(v){v.addEventListener('playing',()=>app.querySelector('.poster').style.visibility='hidden',{once:true})}
+ app.querySelector('[data-scroll]').addEventListener('click',e=>{e.preventDefault();$('#solutions').scrollIntoView({behavior:'smooth'})});
+ const ck=()=>{const c=$('#clock');if(c){const d=new Date();c.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())}};ck();
+ const t=setInterval(ck,1000);cleanup.push(()=>clearInterval(t));
+}
+function card(k,t,items){return `<a class="sol" href="#${k}">${ic(k)}<h3>${t}</h3><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul><span class="go">Open demo →</span></a>`}
+
+/* ---------------- SERVICE & MAINTENANCE ---------------- */
+let svcTab='contracts', openJob=null;
+function service(){
+ app.innerHTML=head('The main offer','Service &amp; Maintenance System','On the left is the technician’s phone. Open a job, tick the checklist, add photos and materials, and have the client sign. On the right is the office: contracts, M-Pesa billing and the monthly report each client receives. Completed jobs appear in the report straight away.')+
+ `<div class="wrap demo"><div class="cols">
+   <div><div class="phone" id="phone"></div><p class="mute" style="text-align:center;font-size:13px;margin:10px 0 0">Technician app · ${S.techs[0]}</p></div>
+   <div class="panel"><div class="ph"><div class="tabs" id="svtabs">
+     <button data-t="contracts">Contracts &amp; billing</button><button data-t="report">Monthly client report</button><button data-t="jobs">All jobs</button></div></div>
+     <div class="pb" id="office"></div></div>
+ </div></div>`;
+ $('#svtabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){svcTab=b.dataset.t;renderOffice()}});
+ renderPhone();renderOffice();
+}
+function renderPhone(){
+ const p=$('#phone');if(!p)return;
+ if(!openJob){
+  const left=S.jobs.filter(j=>!j.done).length;
+  p.innerHTML=`<div class="bar"><div><b>Today’s jobs</b><small>${today()} · ${left} to do</small></div></div><div class="scr">
+   ${S.jobs.map(j=>`<button class="job" data-j="${j.id}"><span class="tag ${j.done?'done':j.type==='urgent'?'urgent':'todo'}">${j.done?'Done '+j.doneAt:j.type==='urgent'?'Fault call-out':'Scheduled service'}</span><span class="t">${j.time} · ${esc(j.title)}</span><span class="s">${esc(j.client)} · ${esc(j.site)}</span><span class="s mono">${j.id}</span></button>`).join('')}
+   <p style="font-size:12.5px;color:#5a6684;text-align:center">Tap a job to open its job card.</p></div>`;
+  p.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{openJob=S.jobs.find(j=>j.id===b.dataset.j);openJob.ticks=openJob.ticks||openJob.tasks.map(()=>false);openJob.mats=openJob.mats||[];openJob.photos=openJob.photos||{};renderPhone()});
+  return;
+ }
+ const j=openJob;
+ if(j.done){p.innerHTML=`<div class="bar"><button aria-label="Back" id="bk">‹</button><div><b>${j.id}</b><small>${esc(j.client)}</small></div></div><div class="scr"><div class="okbox"><b>Job complete at ${j.doneAt}.</b><br>Signed by ${esc(j.signedBy)}. The client has been sent the job card, and it now appears in their monthly report.</div>${matsList(j)}<button class="pbtn alt" id="bk2">Back to today’s jobs</button></div>`;
+  $('#bk').onclick=$('#bk2').onclick=()=>{openJob=null;renderPhone()};return;}
+ p.innerHTML=`<div class="bar"><button aria-label="Back" id="bk">‹</button><div><b>${j.id} · ${esc(j.title)}</b><small>${esc(j.client)} · ${esc(j.site)}</small></div></div>
+ <div class="scr">
+  <h4>Checklist</h4>${j.tasks.map((t,i)=>`<label class="chk"><input type="checkbox" data-i="${i}" ${j.ticks[i]?'checked':''}><span>${esc(t)}</span></label>`).join('')}
+  <h4>Photos</h4><div class="photos">${['before','after'].map(k=>`<div class="ph">${j.photos[k]?`<img src="${j.photos[k]}" alt="${k} photo">`:`<span>+ ${k==='before'?'Before':'After'} photo<br><small>tap to add</small></span>`}<input type="file" accept="image/*" data-p="${k}" aria-label="Add ${k} photo"></div>`).join('')}</div>
+  <button class="pbtn alt" id="samp" style="margin-top:8px;padding:8px;font-size:13px">Use sample photos</button>
+  <h4>Materials used</h4>
+  <div class="mat"><select id="mSel">${S.materials.map((m,i)=>`<option value="${i}">${m[0]}</option>`).join('')}</select><input id="mQty" type="number" min="1" value="1" aria-label="Quantity"><button id="mAdd">Add</button></div>
+  ${matsList(j)}
+  <h4>Client signature</h4>
+  <input id="sName" placeholder="Client name" style="background:#fff;border:1px solid #d5dcec;color:#121a33;margin-bottom:6px" value="${esc(j.sigName||'')}">
+  <canvas id="sig" width="600" height="200" aria-label="Signature pad"></canvas>
+  <div style="display:flex;justify-content:flex-end"><button id="clr" style="background:none;border:0;color:#5a6684;font-size:12.5px;cursor:pointer;padding:4px 0">Clear signature</button></div>
+  <button class="pbtn" id="done">Complete job</button>
+  <p id="why" style="font-size:12px;color:#b4232f;margin:6px 0 0;min-height:1em"></p>
+ </div>`;
+ $('#bk').onclick=()=>{openJob=null;renderPhone()};
+ p.querySelectorAll('[data-i]').forEach(c=>c.onchange=()=>{j.ticks[c.dataset.i]=c.checked});
+ p.querySelectorAll('[data-p]').forEach(inp=>inp.onchange=()=>{const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{j.photos[inp.dataset.p]=r.result;renderPhone()};r.readAsDataURL(f)});
+ $('#samp').onclick=()=>{j.photos.before=samplePhoto(false);j.photos.after=samplePhoto(true);renderPhone()};
+ $('#mAdd').onclick=()=>{const m=S.materials[$('#mSel').value];const q=Math.max(1,+$('#mQty').value||1);j.mats.push([m[0],q,m[1]*q]);renderPhone()};
+ $('#sName').oninput=e=>j.sigName=e.target.value;
+ const cv=$('#sig'),cx=cv.getContext('2d');cx.lineWidth=3.2;cx.lineCap='round';cx.strokeStyle='#0b165a';let drawing=false,signed=!!j.sigData;
+ if(j.sigData){const im=new Image();im.onload=()=>cx.drawImage(im,0,0);im.src=j.sigData}
+ const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+ cv.onpointerdown=e=>{drawing=true;cv.setPointerCapture(e.pointerId);cx.beginPath();cx.moveTo(...pos(e))};
+ cv.onpointermove=e=>{if(!drawing)return;cx.lineTo(...pos(e));cx.stroke();signed=true};
+ cv.onpointerup=()=>{drawing=false;j.sigData=cv.toDataURL()};
+ $('#clr').onclick=()=>{cx.clearRect(0,0,cv.width,cv.height);signed=false;j.sigData=null};
+ $('#done').onclick=()=>{
+  const miss=[];if(j.ticks.some(t=>!t))miss.push('tick every checklist item');if(!j.photos.before||!j.photos.after)miss.push('add both photos');if(!signed)miss.push('get the client to sign');if(!(j.sigName||'').trim())miss.push('enter the client name');
+  if(miss.length){$('#why').textContent='To finish: '+miss.join(', ')+'.';return}
+  j.done=true;j.doneAt=now();j.signedBy=j.sigName.trim();
+  S.history.push({date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short'}),client:j.client,what:j.title+' completed'+(j.mats.length?' ('+j.mats.length+' material item'+(j.mats.length>1?'s':'')+')':''),tech:S.techs[0],fresh:true});
+  toast(j.id+' completed. Job card sent to '+j.client+'.');renderPhone();renderOffice();
+ };
+}
+function matsList(j){return j.mats.length?`<ul class="mats">${j.mats.map(m=>`<li><span>${esc(m[0])} × ${m[1]}</span><span>${kes(m[2])}</span></li>`).join('')}</ul>`:'<p style="font-size:12.5px;color:#5a6684;margin:0">No materials added.</p>'}
+function samplePhoto(after){const c=document.createElement('canvas');c.width=320;c.height=240;const x=c.getContext('2d');
+ x.fillStyle=after?'#dfe8f3':'#9aa3ad';x.fillRect(0,0,320,240);x.fillStyle=after?'#c8d4e3':'#7c858f';x.fillRect(0,150,320,90);
+ x.fillStyle='#f4f6fb';x.fillRect(110,60,110,46);x.fillStyle='#1b2340';x.beginPath();x.arc(206,83,15,0,7);x.fill();
+ if(!after){x.fillStyle='rgba(80,60,40,.55)';for(let i=0;i<40;i++){x.beginPath();x.arc(120+Math.random()*100,62+Math.random()*44,3+Math.random()*5,0,7);x.fill()}}
+ x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,214,320,26);x.fillStyle='#fff';x.font='bold 13px Inter, sans-serif';x.fillText((after?'AFTER':'BEFORE')+' · '+today()+' '+now(),10,232);return c.toDataURL('image/jpeg',.8)}
+
+function renderOffice(){
+ const o=$('#office');if(!o)return;
+ document.querySelectorAll('#svtabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===svcTab));
+ if(svcTab==='contracts'){
+  const C=S.contracts,mrr=C.reduce((a,c)=>a+c.fee,0),paid=C.filter(c=>c.status==='paid').reduce((a,c)=>a+c.fee,0),od=C.filter(c=>c.status==='overdue');
+  o.innerHTML=`<div class="stats"><div class="stat"><b>${C.length}</b><span>Active contracts</span></div><div class="stat"><b class="num">${kes(mrr)}</b><span>Billed this month</span></div><div class="stat"><b class="num" style="color:var(--ok)">${kes(paid)}</b><span>Paid so far</span></div><div class="stat"><b style="color:${od.length?'var(--bad)':'var(--ok)'}">${od.length}</b><span>Overdue</span></div></div>
+  <div class="row" style="justify-content:space-between;margin:18px 0 6px"><span class="mute" style="font-size:14px">Payment requests go to the client’s phone as an M-Pesa prompt.</span><button class="btn sm" id="remind" ${od.length?'':'disabled'}>Send reminders to overdue (${od.length})</button></div>
+  <div class="tbl"><table><thead><tr><th>Client</th><th>Plan</th><th>Next visit</th><th class="num">Monthly</th><th>Status</th><th></th></tr></thead><tbody>
+  ${C.map((c,i)=>`<tr><td><b>${esc(c.client)}</b><span class="sub">${esc(c.site)}</span></td><td>${esc(c.plan)}</td><td>${c.next}</td><td class="num">${kes(c.fee)}</td><td>${stPill(c)}</td><td>${c.status==='paid'?`<span class="sub mono">${c.receipt||'Receipt sent'}</span>`:c.status==='pending'?'<span class="sub">Waiting for PIN…</span>':`<button class="btn sm" data-pay="${i}">Request M-Pesa</button>`}</td></tr>`).join('')}
+  </tbody></table></div>`;
+  o.querySelectorAll('[data-pay]').forEach(b=>b.onclick=()=>{const c=S.contracts[b.dataset.pay];c.status='pending';toast('M-Pesa prompt sent to '+c.phone+' for '+kes(c.fee)+'.');renderOffice();
+   setTimeout(()=>{c.status='paid';c.receipt='M-Pesa '+('S'+Math.random().toString(36).slice(2,10)).toUpperCase();toast(c.client+' paid '+kes(c.fee)+'. Receipt emailed.');renderOffice()},2600)});
+  const r=$('#remind');if(r)r.onclick=()=>{od.forEach(c=>c.reminded=true);toast('Reminders sent by SMS and email to '+od.length+' clients.');renderOffice()};
+ } else if(svcTab==='report'){
+  const names=[...new Set(S.contracts.map(c=>c.client))];o.dataset.client=o.dataset.client||names[0];
+  const cl=o.dataset.client,hist=S.history.filter(h=>h.client===cl),ct=S.contracts.find(c=>c.client===cl);
+  o.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:14px"><label style="max-width:300px;flex:1">Client<select id="rc">${names.map(n=>`<option ${n===cl?'selected':''}>${esc(n)}</option>`).join('')}</select></label><button class="btn pri sm" id="send">Email report to client</button></div>
+  <div class="doc"><div class="dh"><div><h3>Monthly security report</h3><div style="color:#5a6684">${esc(cl)} · ${esc(ct.site)} · ${month()}</div></div><div style="text-align:right;font-size:12.5px;color:#5a6684">Prepared by<br><b style="color:#0b165a">Your company name</b></div></div>
+   <div class="kpis"><div><b>${hist.length}</b><span>Visits and jobs done</span></div><div><b>${hist.filter(h=>/replaced|fault|repair|re-driven|gate/i.test(h.what)).length}</b><span>Faults fixed</span></div><div><b>1h 40m</b><span>Average response time</span></div><div><b>99.2%</b><span>Camera uptime</span></div></div>
+   <table><thead><tr><th>Date</th><th>Work done</th><th>Technician</th></tr></thead><tbody>${hist.length?hist.map(h=>`<tr><td>${h.date}</td><td>${esc(h.what)}${h.fresh?' <span style="color:#0f7a4f;font-weight:700;font-size:12px">· NEW</span>':''}</td><td>${esc(h.tech)}</td></tr>`).join(''):'<tr><td colspan="3" style="color:#5a6684">No work recorded yet this month. Complete a job on the phone to see it appear here.</td></tr>'}</tbody></table>
+   <p style="margin:14px 0 0;color:#5a6684">Next scheduled visit: <b style="color:#0b165a">${ct.next}</b> · Plan: ${esc(ct.plan)}</p></div>`;
+  $('#rc').onchange=e=>{o.dataset.client=e.target.value;renderOffice()};
+  $('#send').onclick=()=>toast('Report for '+cl+' emailed as a PDF.');
+ } else {
+  o.innerHTML=`<div class="tbl"><table><thead><tr><th>Job</th><th>Client</th><th>Technician</th><th>Status</th></tr></thead><tbody>${S.jobs.map(j=>`<tr><td><b class="mono">${j.id}</b><span class="sub">${esc(j.title)}</span></td><td>${esc(j.client)}</td><td>${S.techs[0]}</td><td>${j.done?'<span class="pill ok">Done '+j.doneAt+'</span>':j.type==='urgent'?'<span class="pill bad">Fault, today '+j.time+'</span>':'<span class="pill info">Booked '+j.time+'</span>'}</td></tr>`).join('')}
+  <tr><td><b class="mono">JC-2044</b><span class="sub">Access reader offline</span></td><td>St. Mary’s Academy</td><td>${S.techs[1]}</td><td><span class="pill warn">Tomorrow 09:00</span></td></tr>
+  <tr><td><b class="mono">JC-2045</b><span class="sub">Monthly fence check</span></td><td>Mombasa Rd Warehouse</td><td>${S.techs[2]}</td><td><span class="pill info">Tomorrow 10:30</span></td></tr></tbody></table></div>`;
+ }
+}
+function stPill(c){return {paid:'<span class="pill ok">Paid</span>',due:'<span class="pill info">Due</span>',overdue:`<span class="pill bad">Overdue${c.reminded?' · reminded':''}</span>`,pending:'<span class="pill warn">Request sent</span>'}[c.status]}
+
+/* ---------------- CCTV ---------------- */
+const CAM={site:'Riverside Apartments',sites:{
+ 'Riverside Apartments':[['CAM-01','Main gate (outside)','4MP bullet',1,'192.168.1.101',true],['CAM-02','Main gate (inside)','4MP dome',2,'192.168.1.102',true],['CAM-03','Parking A','4MP bullet',3,'192.168.1.103',true],['CAM-04','Parking B','4MP bullet',4,'192.168.1.104',false],['CAM-05','Block A lobby','2MP dome',5,'192.168.1.105',true],['CAM-06','Perimeter wall east','4MP PTZ',6,'192.168.1.106',true]],
+ 'Mombasa Rd Warehouse':[['CAM-01','Loading bay 1','4MP bullet',1,'10.0.0.21',true],['CAM-02','Loading bay 2','4MP bullet',2,'10.0.0.22',true],['CAM-03','Store room','2MP dome',3,'10.0.0.23',true],['CAM-04','Gate ANPR','ANPR camera',4,'10.0.0.24',true]]},tickets:[],requests:[]};
+function cctv(){
+ app.innerHTML=head('IP CCTV','Every camera on record, every fault fixed fast.','Keep a register of every camera, NVR and IP address for each client site. Report a fault and it becomes a ticket for a technician. Clients can ask for footage without calling around.')+
+ `<div class="wrap demo">
+  <div class="panel"><div class="ph"><h3>Camera register</h3><div class="row"><select id="csite" style="width:auto">${Object.keys(CAM.sites).map(s=>`<option ${s===CAM.site?'selected':''}>${s}</option>`).join('')}</select></div></div><div class="pb" id="camtbl"></div></div>
+  <div class="cols2">
+   <div class="panel"><div class="ph"><h3>Fault tickets</h3></div><div class="pb" id="tix"></div></div>
+   <div class="panel"><div class="ph"><h3>Footage request (client view)</h3></div><div class="pb">
+    <form id="ff" class="form"><label>Camera<select id="fcam"></select></label><label>Date<input id="fdate" type="date"></label><label>From<input id="ffrom" type="time" value="21:00"></label><label>To<input id="fto" type="time" value="23:30"></label><label class="full">What happened?<input id="fwhy" value="Car scratched in parking overnight"></label><div class="full"><button class="btn pri" type="submit">Request footage</button></div></form>
+    <div id="freq" style="margin-top:14px;display:grid;gap:8px"></div></div></div>
+  </div>
+ </div>`;
+ $('#fdate').value=new Date().toISOString().slice(0,10);
+ $('#csite').onchange=e=>{CAM.site=e.target.value;drawCams()};
+ $('#ff').onsubmit=e=>{e.preventDefault();CAM.requests.unshift({id:rid('FR'),cam:$('#fcam').value,when:$('#fdate').value+' '+$('#ffrom').value+'–'+$('#fto').value,why:$('#fwhy').value,site:CAM.site,status:'Received'});drawReq();toast('Footage request sent. The office has 24 hours to respond.');
+  const r=CAM.requests[0];setTimeout(()=>{r.status='Clip ready';drawReq()},3000)};
+ drawCams();drawReq();
+}
+function drawCams(){
+ const cams=CAM.sites[CAM.site],on=cams.filter(c=>c[5]).length;
+ $('#camtbl').innerHTML=`<div class="stats" style="margin-bottom:14px"><div class="stat"><b>${cams.length}</b><span>Cameras</span></div><div class="stat"><b style="color:var(--ok)">${on}</b><span>Online</span></div><div class="stat"><b style="color:${cams.length-on?'var(--bad)':'var(--ok)'}">${cams.length-on}</b><span>Offline</span></div><div class="stat"><b>30 days</b><span>Recording kept</span></div></div>
+ <div class="tbl"><table><thead><tr><th>Camera</th><th>Location</th><th>Type</th><th>NVR ch.</th><th>IP address</th><th>Status</th><th></th></tr></thead><tbody>
+ ${cams.map((c,i)=>{const t=CAM.tickets.find(t=>t.site===CAM.site&&t.cam===c[0]&&!t.fixed);return `<tr><td class="mono">${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td class="num">${c[3]}</td><td class="mono">${c[4]}</td><td>${c[5]?'<span class="pill ok">Online</span>':'<span class="pill bad">Offline</span>'}</td><td>${t?`<span class="sub mono">${t.id}</span>`:`<button class="btn sm" data-f="${i}">Report fault</button>`}</td></tr>`}).join('')}</tbody></table></div>
+ <form id="addcam" class="row" style="margin-top:14px"><input id="ncl" placeholder="New camera location, e.g. Back gate" style="flex:1;min-width:180px"><select id="nct" style="width:auto"><option>4MP bullet</option><option>4MP dome</option><option>ANPR camera</option><option>4MP PTZ</option></select><button class="btn sm" type="submit">Add camera</button></form>`;
+ document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{const c=cams[b.dataset.f];c[5]=false;CAM.tickets.unshift({id:rid('TK'),site:CAM.site,cam:c[0],loc:c[1],tech:S.techs[1+Math.floor(Math.random()*2)],at:now(),fixed:false});toast('Ticket created and sent to the technician.');drawCams();drawTix()});
+ $('#addcam').onsubmit=e=>{e.preventDefault();const l=$('#ncl').value.trim();if(!l){$('#ncl').focus();return}const n=cams.length+1;const base=cams[0][4].split('.').slice(0,3).join('.');cams.push(['CAM-'+pad(n),l,$('#nct').value,n,base+'.'+(100+n),true]);toast(l+' added to the register.');drawCams()};
+ $('#fcam').innerHTML=cams.map(c=>`<option>${c[0]} · ${c[1]}</option>`).join('');
+ drawTix();
+}
+function drawTix(){const el=$('#tix');if(!el)return;const T=CAM.tickets;
+ el.innerHTML=T.length?T.map((t,i)=>`<div class="alarm" style="margin-bottom:8px"><div class="top"><b class="mono">${t.id}</b>${t.fixed?'<span class="pill ok">Fixed '+t.fixedAt+'</span>':'<span class="pill warn">Assigned</span>'}</div><div>${t.cam} · ${t.loc} <span class="mute">· ${t.site}</span></div><div class="row" style="justify-content:space-between"><span class="mute" style="font-size:13.5px">Technician: ${t.tech} · opened ${t.at}</span>${t.fixed?'':`<button class="btn sm" data-x="${i}">Mark fixed</button>`}</div></div>`).join(''):'<p class="empty">No open tickets. Use “Report fault” on any camera above.</p>';
+ el.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{const t=T[b.dataset.x];t.fixed=true;t.fixedAt=now();const c=CAM.sites[t.site].find(c=>c[0]===t.cam);if(c)c[5]=true;toast(t.cam+' is back online. Client notified.');drawCams()});}
+function drawReq(){const el=$('#freq');if(!el)return;el.innerHTML=CAM.requests.map(r=>`<div class="alarm"><div class="top"><b class="mono">${r.id}</b><span class="pill ${r.status==='Clip ready'?'ok':'info'}">${r.status}</span></div><div>${esc(r.cam)} · ${esc(r.when)}</div><div class="mute" style="font-size:13.5px">${esc(r.why)}</div></div>`).join('')}
+
+/* ---------------- ACCESS ---------------- */
+const ACC={visitors:[{name:'Grace Achieng',id:'2xxxx418',host:'Unit B4',purpose:'Delivery',veh:'KDA 512M',in:'08:12',out:'08:31',code:'4F7K2Q'},{name:'Peter Kamau',id:'3xxxx902',host:'Management office',purpose:'Plumbing repair',veh:'',in:'09:40',out:null,code:'9H3M1T'}],
+ staff:[['Mary Njeri','Reception','07:52',true],['John Ouma','Security','06:58',true],['Ann Chebet','Finance','08:15',true],['Daniel Kiprop','Maintenance','—',true]]};
+function access(){
+ app.innerHTML=head('Access control','Know who came in, and when.','Guards issue visitor passes with a QR code from a phone or tablet at the gate. Fingerprint and face readers feed one attendance list. A lost card is blocked in one tap.')+
+ `<div class="wrap demo"><div class="cols">
+   <div class="panel"><div class="ph"><h3>New visitor pass</h3></div><div class="pb">
+    <form id="vf" class="form"><label class="full">Visitor name<input id="vn" required value="Samuel Mwangi"></label><label>ID number<input id="vid" value="2xxxx771"></label><label>Vehicle reg.<input id="vv" value="KCX 204T"></label><label>Visiting<input id="vh" value="Unit A2"></label><label>Purpose<input id="vp" value="Meeting"></label><div class="full"><button class="btn pri" type="submit">Issue pass</button></div></form>
+    <div id="vpass" style="margin-top:16px"></div></div></div>
+   <div style="display:grid;gap:18px;min-width:0">
+    <div class="panel"><div class="ph"><h3>Visitors today</h3><span class="mute" id="vcount" style="font-size:14px"></span></div><div class="pb tbl" id="vlog"></div></div>
+    <div class="panel"><div class="ph"><h3>Staff attendance from readers</h3></div><div class="pb tbl" id="stf"></div></div>
+   </div></div></div>`;
+ $('#vf').onsubmit=e=>{e.preventDefault();const v={name:$('#vn').value.trim(),id:$('#vid').value,host:$('#vh').value,purpose:$('#vp').value,veh:$('#vv').value,in:now(),out:null,code:Math.random().toString(36).slice(2,8).toUpperCase()};if(!v.name)return;ACC.visitors.unshift(v);showPass(v);drawVis();toast('Pass issued. '+v.host+' has been told their visitor is here.')};
+ drawVis();drawStaff();
+}
+function showPass(v){const el=$('#vpass');el.innerHTML=`<div class="pass"><div class="qr" id="qr"></div><div><div style="font-size:12px;color:#5a6684;text-transform:uppercase;letter-spacing:.1em">Visitor pass · valid today</div><b>${esc(v.name)}</b><div style="color:#5a6684;font-size:14px">Visiting ${esc(v.host)} · in at ${v.in}</div><div class="code">${v.code}</div><div style="font-size:12.5px;color:#5a6684">Scan at the gate to sign out.</div></div></div>`;
+ try{new QRCode($('#qr'),{text:'IVULA-PASS:'+v.code+':'+v.name,width:132,height:132,colorDark:'#0b165a',colorLight:'#ffffff'})}catch(e){$('#qr').innerHTML='<div style="width:132px;height:132px;display:grid;place-items:center;border:1px dashed #b8c3dc;border-radius:8px;font-size:12px;color:#5a6684">QR code</div>'}}
+function drawVis(){const V=ACC.visitors;$('#vcount').textContent=V.filter(v=>!v.out).length+' on site now';
+ $('#vlog').innerHTML=`<table><thead><tr><th>Visitor</th><th>Visiting</th><th>In</th><th>Out</th><th></th></tr></thead><tbody>${V.map((v,i)=>`<tr><td><b>${esc(v.name)}</b><span class="sub">ID ${esc(v.id)}${v.veh?' · '+esc(v.veh):''}</span></td><td>${esc(v.host)}<span class="sub">${esc(v.purpose)}</span></td><td class="num">${v.in}</td><td class="num">${v.out||'<span class="pill info">On site</span>'}</td><td>${v.out?'':`<button class="btn sm" data-o="${i}">Sign out</button>`}</td></tr>`).join('')}</tbody></table>`;
+ document.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{V[b.dataset.o].out=now();drawVis()})}
+function drawStaff(){$('#stf').innerHTML=`<table><thead><tr><th>Name</th><th>Department</th><th>Clocked in</th><th>Card</th><th></th></tr></thead><tbody>${ACC.staff.map((s,i)=>`<tr><td>${s[0]}</td><td>${s[1]}</td><td class="num">${s[2]==='—'?'<span class="pill warn">Not in yet</span>':s[2]+(s[2]>'08:00'?' <span class="pill warn">Late</span>':'')}</td><td>${s[3]?'<span class="pill ok">Active</span>':'<span class="pill bad">Blocked</span>'}</td><td>${s[3]?`<button class="btn sm danger" data-b="${i}">Block card</button>`:`<button class="btn sm" data-b="${i}">Restore</button>`}</td></tr>`).join('')}</tbody></table>`;
+ document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const s=ACC.staff[b.dataset.b];s[3]=!s[3];toast(s[3]?s[0]+'’s card works again.':s[0]+'’s card is blocked on every door.');drawStaff()})}
+
+/* ---------------- FIRE ---------------- */
+const FIRE={items:[['Fire alarm panel','Ground floor reception'],['Standby batteries','Panel'],['Smoke detector Z1-01','Block A, floor 1'],['Smoke detector Z1-02','Block A, floor 2'],['Heat detector Z2-01','Kitchen'],['Manual call point MCP-1','Main exit'],['Manual call point MCP-2','Fire escape'],['Sounder SB-1','Block A stairwell'],['Extinguisher CO2 5kg','Server room'],['Extinguisher DCP 9kg','Parking']],res:{},cert:null};
+function fire(){
+ app.innerHTML=head('Fire alarm systems','Servicing and certificates on time, every time.','The technician works through every device on the site with a digital checklist. Anything that fails becomes a repair quote. When every device passes, the client gets a signed service certificate and the next service is booked.')+
+ `<div class="wrap demo"><div class="cols2">
+  <div class="panel"><div class="ph"><h3>Inspection · Westlands Office Park</h3><span id="fprog" class="mute" style="font-size:14px"></span></div><div class="pb tbl" id="flist"></div></div>
+  <div style="display:grid;gap:18px;min-width:0"><div class="panel"><div class="ph"><h3>Result</h3><button class="btn sm" id="fall">Mark the rest as passed</button></div><div class="pb" id="fout"></div></div></div>
+ </div></div>`;
+ $('#fall').onclick=()=>{FIRE.items.forEach((_,i)=>{if(!FIRE.res[i])FIRE.res[i]='pass'});drawFire()};
+ drawFire();
+}
+function drawFire(){const R=FIRE.res,n=FIRE.items.length,d=Object.keys(R).length,fails=FIRE.items.map((it,i)=>[it,i]).filter(([_,i])=>R[i]==='fail');
+ $('#fprog').textContent=d+' of '+n+' checked';
+ $('#flist').innerHTML=`<table><thead><tr><th>Device</th><th>Result</th></tr></thead><tbody>${FIRE.items.map((it,i)=>`<tr><td><b>${it[0]}</b><span class="sub">${it[1]}</span></td><td><div class="row" style="gap:6px"><button class="btn sm" data-r="${i}:pass" style="${R[i]==='pass'?'background:#0b2a22;border-color:var(--ok);color:var(--ok)':''}">Pass</button><button class="btn sm" data-r="${i}:fail" style="${R[i]==='fail'?'background:#2c0f15;border-color:var(--bad);color:var(--bad)':''}">Fail</button></div></td></tr>`).join('')}</tbody></table>`;
+ document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const[i,v]=b.dataset.r.split(':');R[i]=v;FIRE.cert=null;drawFire()});
+ const o=$('#fout');
+ if(d<n){o.innerHTML=`<p class="mute" style="margin:0">Check every device to finish. Try failing one to see the repair quote, then pass everything to issue the certificate.</p>${fails.length?repairQ(fails):''}`;return}
+ if(fails.length){o.innerHTML=repairQ(fails)+`<p class="mute" style="font-size:14px;margin:12px 0 0">The certificate is issued once the failed items are fixed and pass.</p>`;$('#sendq').onclick=()=>toast('Repair quote sent to the client for approval.');return}
+ const next=new Date();next.setMonth(next.getMonth()+6);
+ o.innerHTML=`<div class="doc"><div class="dh"><div><h3>Fire alarm service certificate</h3><div style="color:#5a6684">Westlands Office Park · Waiyaki Way</div></div><div style="text-align:right;font-size:12.5px;color:#5a6684">Certificate no.<br><b class="mono" style="color:#0b165a">FC-${new Date().getFullYear()}-0187</b></div></div>
+ <p style="margin:0 0 10px">All ${n} devices were inspected and tested on <b>${today()}</b> and found to be in working order.</p>
+ <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div><b>${n}/${n}</b><span>Devices passed</span></div><div><b>0</b><span>Open faults</span></div><div><b style="font-size:16px">${next.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</b><span>Next service due</span></div></div>
+ <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap"><div><div class="sig">K. Mutua</div><div style="font-size:12.5px;color:#5a6684">Kevin Mutua, Fire systems technician</div></div><div style="font-size:12.5px;color:#5a6684">Your company name and logo</div></div></div>
+ <div class="row" style="margin-top:12px"><button class="btn pri sm" id="fsend">Email certificate to client</button><span class="mute" style="font-size:13.5px">Reminder set for the next service.</span></div>`;
+ $('#fsend').onclick=()=>toast('Certificate emailed to Westlands Office Park.');}
+function repairQ(f){const tot=f.length*4500;return `<div class="alarm live" style="animation:none"><b>Repair quote</b>${f.map(([it])=>`<div class="row" style="justify-content:space-between"><span>Replace or repair: ${it[0]}</span><span class="num">${kes(4500)}</span></div>`).join('')}<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:6px"><b>Total (sample prices)</b><b class="num">${kes(tot)}</b></div><button class="btn sm" id="sendq">Send quote to client</button></div>`}
+
+/* ---------------- FENCE ---------------- */
+const FENCE={zones:[['Zone 1','North wall',8.6],['Zone 2','East wall',8.2],['Zone 3','South wall',3.4],['Zone 4','West wall',7.9],['Zone 5','Gate line',8.1],['Zone 6','Back yard',6.8]],min:5,calls:[],batt:[['Energiser A (zones 1–3)','Battery due 12 Dec','warn'],['Energiser B (zones 4–6)','Battery replaced 02 Sep','ok'],['Siren and strobe','Tested 15 Nov','ok']]};
+function fence(){
+ app.innerHTML=head('Electric fences','Fences that stay live, with proof.','On each visit the technician records the voltage of every zone. Anything below the safe level is flagged at once and becomes a call-out with photos and GPS location. The client sees their fence history in the monthly report.')+
+ `<div class="wrap demo"><div class="cols2">
+  <div class="panel"><div class="ph"><h3>Voltage readings · Mombasa Rd Warehouse</h3><span class="mute" style="font-size:13px">kV, minimum ${FENCE.min.toFixed(1)}</span></div><div class="pb"><div class="bars" id="bars"></div><div class="form" id="zin" style="margin-top:18px;grid-template-columns:repeat(3,1fr)"></div></div></div>
+  <div style="display:grid;gap:18px;min-width:0">
+   <div class="panel"><div class="ph"><h3>Call-outs</h3></div><div class="pb" id="calls"></div></div>
+   <div class="panel"><div class="ph"><h3>Energisers and batteries</h3></div><div class="pb">${FENCE.batt.map(b=>`<div class="cp"><span style="flex:1">${b[0]}</span><span class="pill ${b[2]}">${b[1]}</span></div>`).join('')}</div></div>
+  </div></div></div>`;
+ drawFence();
+}
+function drawFence(){const Z=FENCE.zones,max=10;
+ $('#bars').innerHTML=Z.map(z=>`<div class="b ${z[2]<FENCE.min?'low':''}"><b>${z[2].toFixed(1)}</b><i style="height:${Math.max(4,z[2]/max*170)}px"></i><span>${z[0]}</span></div>`).join('')+`<div class="thr" style="bottom:${FENCE.min/max*170+42}px"><span>min ${FENCE.min} kV</span></div>`;
+ $('#zin').innerHTML=Z.map((z,i)=>`<label>${z[0]} · ${z[1]}<input type="number" step="0.1" min="0" max="10" value="${z[2]}" data-z="${i}"></label>`).join('');
+ document.querySelectorAll('[data-z]').forEach(inp=>inp.onchange=()=>{Z[inp.dataset.z][2]=Math.max(0,Math.min(10,+inp.value||0));drawFence()});
+ const low=Z.filter(z=>z[2]<FENCE.min);
+ const el=$('#calls');
+ el.innerHTML=(low.length?low.map(z=>{const c=FENCE.calls.find(c=>c.zone===z[0]&&!c.done);return `<div class="alarm ${c?'':'live'}" style="margin-bottom:8px"><div class="top"><b>${z[0]} · ${z[1]} at ${z[2].toFixed(1)} kV</b>${c?'<span class="pill warn">Call-out '+c.id+'</span>':'<span class="pill bad">Below safe level</span>'}</div>${c?`<div class="mute" style="font-size:13.5px">${c.tech} assigned · GPS -1.3194, 36.8460 · photos attached</div>`:`<button class="btn sm" data-c="${z[0]}">Raise call-out</button>`}</div>`}).join(''):'<p class="empty">All zones are above the safe level. Change a reading to below 5.0 to see an alert.</p>')+
+  (FENCE.calls.filter(c=>c.done).length?'<p class="mute" style="font-size:13px;margin:8px 0 0">Resolved: '+FENCE.calls.filter(c=>c.done).map(c=>c.zone).join(', ')+'</p>':'');
+ el.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{FENCE.calls.push({id:rid('CO'),zone:b.dataset.c,tech:S.techs[0],done:false});toast('Call-out sent to '+S.techs[0]+'. Client notified.');drawFence()});
+ FENCE.calls.forEach(c=>{const z=Z.find(z=>z[0]===c.zone);if(z&&z[2]>=FENCE.min&&!c.done){c.done=true}});
+}
+
+/* ---------------- MONITORING ---------------- */
+const MON={alarms:[],patrol:[['Main gate','21:02'],['Parking A','21:09'],['Generator room',null],['Perimeter east',null],['Back gate',null],['Loading bay',null]],incidents:[{id:'IR-311',when:'Last night 02:14',site:'Mombasa Rd Warehouse',what:'Fence alarm zone 3. Team found a fallen branch on the fence. Cleared and fence restored.',outcome:'Technical fault'}],units:['Response car R1','Response car R2','Foot patrol P3'],seq:0};
+const ALARM_POOL=[['Mombasa Rd Warehouse','Zone 3 · South wall','Electric fence alarm'],['Karen Villa 14','Kitchen door','Intruder alarm'],['Riverside Apartments','Parking B','Camera motion after hours'],['St. Mary’s Academy','Admin block','Panic button pressed']];
+function monitoring(){
+ if(!MON.alarms.length)newAlarm(0,95);
+ app.innerHTML=head('Perimeter security and monitoring','Show clients the protection they pay for.','The control room sees each alarm, sends a team and closes it with an outcome. Every step is timed. Guards scan checkpoints on patrol and can raise an SOS. Each client gets the record in their monthly report.')+
+ `<div class="wrap demo">
+  <div class="stats" id="mstats"></div>
+  <div class="cols2">
+   <div class="panel"><div class="ph"><h3>Control room · alarms</h3><button class="btn sm" id="sim">Simulate an alarm</button></div><div class="pb" id="alarms" style="display:grid;gap:10px"></div></div>
+   <div style="display:grid;gap:18px;min-width:0">
+    <div class="panel"><div class="ph"><h3>Night patrol · John Ouma</h3><span id="pprog" class="mute" style="font-size:14px"></span></div><div class="pb"><div id="cps"></div><div class="row" style="margin-top:12px"><button class="btn pri sm" id="scan">Scan next checkpoint</button></div></div></div>
+    <div class="panel"><div class="ph"><h3>Guard phone</h3></div><div class="pb"><button class="sosbtn" id="sos">SOS</button><p class="mute" style="font-size:13px;margin:8px 0 0">Sends the guard’s location to the control room and the supervisor.</p></div></div>
+   </div>
+  </div>
+  <div class="panel"><div class="ph"><h3>Incident reports</h3></div><div class="pb tbl" id="inc"></div></div>
+ </div>`;
+ $('#sim').onclick=()=>{newAlarm();drawMon();toast('New alarm received.')};
+ $('#scan').onclick=()=>{const p=MON.patrol.find(p=>!p[1]);if(p){p[1]=now();drawMon()}};
+ $('#sos').onclick=()=>{MON.alarms.unshift({id:'AL-'+(400+ ++MON.seq),site:'Riverside Apartments',zone:'Guard John Ouma · GPS -1.2921, 36.7856',type:'SOS from guard',t0:Date.now(),state:'new',sos:true});drawMon();toast('SOS received in the control room.')};
+ drawMon();
+ const t=setInterval(()=>document.querySelectorAll('[data-tm]').forEach(e=>{const a=MON.alarms.find(a=>a.id===e.dataset.tm);if(a)e.textContent=dur((a.t1||Date.now())-a.t0)}),1000);cleanup.push(()=>clearInterval(t));
+}
+function newAlarm(i,ago){const p=ALARM_POOL[i!=null?i:(MON.seq%ALARM_POOL.length)];MON.alarms.unshift({id:'AL-'+(400+ ++MON.seq),site:p[0],zone:p[1],type:p[2],t0:Date.now()-(ago||0)*1000,state:'new'})}
+const dur=ms=>{const s=Math.floor(ms/1000);return pad(Math.floor(s/60))+':'+pad(s%60)};
+function drawMon(){
+ const A=MON.alarms,open=A.filter(a=>a.state!=='closed'),closed=A.filter(a=>a.state==='closed');
+ const avg=closed.length?dur(closed.reduce((s,a)=>s+(a.t1-a.t0),0)/closed.length):'—';
+ $('#mstats').innerHTML=`<div class="stat"><b style="color:${open.length?'var(--bad)':'var(--ok)'}">${open.length}</b><span>Open alarms</span></div><div class="stat"><b>${closed.length+38}</b><span>Alarms this month</span></div><div class="stat"><b class="num">${avg}</b><span>Average response (this session)</span></div><div class="stat"><b>${MON.patrol.filter(p=>p[1]).length}/${MON.patrol.length}</b><span>Checkpoints scanned</span></div>`;
+ const el=$('#alarms');
+ el.innerHTML=A.length?A.map((a,i)=>{const live=a.state!=='closed';return `<div class="alarm ${a.sos&&live?'sos':live?'live':''}"><div class="top"><b>${a.type}</b>${live?`<span class="timer" data-tm="${a.id}">${dur(Date.now()-a.t0)}</span>`:`<span class="pill ok">Closed · ${a.outcome} · ${dur(a.t1-a.t0)}</span>`}</div>
+  <div>${esc(a.site)} <span class="mute">· ${esc(a.zone)}</span></div>
+  ${a.unit?`<div class="mute" style="font-size:13.5px">${a.unit} ${a.state==='arrived'||a.state==='closed'?'arrived':'on the way'}</div>`:''}
+  ${live?`<div class="row">${a.state==='new'?`<select data-u="${i}" style="width:auto">${MON.units.map(u=>`<option>${u}</option>`).join('')}</select><button class="btn sm pri" data-d="${i}">Send team</button>`:a.state==='sent'?`<button class="btn sm" data-a="${i}">Team arrived</button>`:`<select data-oc="${i}" style="width:auto"><option>False alarm</option><option>Intruder, police called</option><option>Technical fault</option><option>Guard emergency resolved</option></select><button class="btn sm pri" data-c="${i}">Close alarm</button>`}</div>`:''}
+ </div>`}).join(''):'<p class="empty">No alarms.</p>';
+ el.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const a=A[b.dataset.d];a.unit=el.querySelector(`[data-u="${b.dataset.d}"]`).value;a.state='sent';drawMon()});
+ el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{A[b.dataset.a].state='arrived';drawMon()});
+ el.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const a=A[b.dataset.c];a.outcome=el.querySelector(`[data-oc="${b.dataset.c}"]`).value;a.state='closed';a.t1=Date.now();
+  MON.incidents.unshift({id:'IR-'+(311+MON.seq),when:'Today '+now(),site:a.site,what:a.type+' at '+a.zone+'. '+(a.unit||'Team')+' attended.',outcome:a.outcome});toast('Alarm closed. Incident report added for '+a.site+'.');drawMon()});
+ $('#pprog').textContent=MON.patrol.filter(p=>p[1]).length+' of '+MON.patrol.length;
+ $('#cps').innerHTML=MON.patrol.map(p=>`<div class="cp ${p[1]?'done':''}"><i>${p[1]?'✓':''}</i><span style="flex:1">${p[0]}</span><span class="mono mute">${p[1]||'waiting'}</span></div>`).join('');
+ $('#scan').disabled=!MON.patrol.some(p=>!p[1]);
+ $('#inc').innerHTML=`<table><thead><tr><th>Report</th><th>When</th><th>Site</th><th>What happened</th><th>Outcome</th></tr></thead><tbody>${MON.incidents.map(r=>`<tr><td class="mono">${r.id}</td><td>${r.when}</td><td>${esc(r.site)}</td><td>${esc(r.what)}</td><td>${esc(r.outcome)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ---------------- BUSINESS ---------------- */
+const CAT=[['4MP IP dome camera',6500],['4MP IP bullet camera',7200],['8-channel NVR with 2TB disk',28000],['PoE switch, 8 port',9500],['Fingerprint and face reader',24000],['Electric fence energiser',18500],['Fence wire and insulators (per metre)',450],['Smoke detector',2900],['Installation labour (per day)',8000]];
+const QT={lines:[[0,4],[2,1],[3,1],[8,2]],client:'Riverside Apartments',state:'draft'};
+function business(){
+ app.innerHTML=head('Quotes, website and payments','Win the job before the competition replies.','Build a branded quote in a few minutes. The client opens one link, approves it, signs and pays the deposit by M-Pesa. Website visitors request a site survey and it lands on your WhatsApp.')+
+ `<div class="wrap demo"><div class="cols2">
+  <div class="panel"><div class="ph"><h3>Quote builder</h3><span class="mute" style="font-size:13px">Sample prices</span></div><div class="pb" id="qb"></div></div>
+  <div class="panel"><div class="ph"><h3>What the client sees</h3></div><div class="pb" id="qc"></div></div>
+ </div>
+ <div class="cols2">
+  <div class="panel"><div class="ph"><h3>Website: request a site survey</h3></div><div class="pb"><form id="wf" class="form"><label>Name<input id="wn" value="Esther Wambui"></label><label>Phone<input id="wp" value="0722 000 111"></label><label>Area<input id="wa" value="Runda"></label><label>Interested in<select id="ws"><option>IP CCTV</option><option>Electric fence</option><option>Access control</option><option>Fire alarm</option><option>Alarm monitoring</option></select></label><label class="full">Details<input id="wd" value="4-bedroom house, want cameras and a fence upgrade"></label><div class="full"><button class="btn pri" type="submit">Send request</button></div></form></div></div>
+  <div class="panel"><div class="ph"><h3>Arrives on your WhatsApp</h3></div><div class="pb"><div class="wa" id="wa"><div class="who">Your business WhatsApp</div><p class="empty" style="color:#8aa">Send the form to see the message.</p></div></div></div>
+ </div></div>`;
+ $('#wf').onsubmit=e=>{e.preventDefault();$('#wa').innerHTML=`<div class="who">Your business WhatsApp · ${now()}</div><div class="msg">New site survey request from your website\n\nName: ${esc($('#wn').value)}\nPhone: ${esc($('#wp').value)}\nArea: ${esc($('#wa').value)}\nService: ${esc($('#ws').value)}\nDetails: ${esc($('#wd').value)}</div>`;toast('Request sent. The visitor sees a thank-you page.')};
+ drawQ();
+}
+function qTotals(){const sub=QT.lines.reduce((s,[i,q])=>s+CAT[i][1]*q,0),vat=sub*.16;return{sub,vat,tot:sub+vat,dep:(sub+vat)/2}}
+function drawQ(){const t=qTotals();
+ $('#qb').innerHTML=`<label style="margin-bottom:12px">Client<input id="qcl" value="${esc(QT.client)}"></label>
+ <div class="tbl"><table><thead><tr><th>Item</th><th>Qty</th><th class="num">Amount</th><th></th></tr></thead><tbody>${QT.lines.map(([i,q],k)=>`<tr><td>${CAT[i][0]}</td><td><input type="number" min="1" value="${q}" data-q="${k}" style="width:64px" aria-label="Quantity"></td><td class="num">${kes(CAT[i][1]*q)}</td><td><button class="btn sm" data-del="${k}" aria-label="Remove">✕</button></td></tr>`).join('')}</tbody></table></div>
+ <div class="row" style="margin:12px 0"><select id="qadd" style="flex:1;min-width:180px">${CAT.map((c,i)=>`<option value="${i}">${c[0]} · ${kes(c[1])}</option>`).join('')}</select><button class="btn sm" id="qaddb">Add line</button></div>
+ <div style="display:grid;gap:4px;font-size:14px" class="num"><div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${kes(t.sub)}</span></div><div class="row" style="justify-content:space-between"><span class="mute">VAT 16%</span><span>${kes(t.vat)}</span></div><div class="row" style="justify-content:space-between;font-size:17px"><b>Total</b><b>${kes(t.tot)}</b></div></div>
+ <button class="btn pri" id="qsend" style="margin-top:14px">Send quote link</button>`;
+ $('#qcl').oninput=e=>{QT.client=e.target.value;drawC()};
+ document.querySelectorAll('[data-q]').forEach(i=>i.onchange=()=>{QT.lines[i.dataset.q][1]=Math.max(1,+i.value||1);QT.state='draft';drawQ()});
+ document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{QT.lines.splice(b.dataset.del,1);QT.state='draft';drawQ()});
+ $('#qaddb').onclick=()=>{QT.lines.push([+$('#qadd').value,1]);QT.state='draft';drawQ()};
+ $('#qsend').onclick=()=>{QT.state='sent';toast('Quote link sent to '+QT.client+' by SMS and email.');drawC()};
+ drawC();}
+function drawC(){const t=qTotals(),el=$('#qc');
+ if(QT.state==='draft'){el.innerHTML='<p class="empty">Press “Send quote link” to see the client’s page.</p>';return}
+ el.innerHTML=`<div class="doc"><div class="dh"><div><h3>Quotation Q-1042</h3><div style="color:#5a6684">For ${esc(QT.client)} · ${today()}</div></div><div style="font-size:12.5px;color:#5a6684;text-align:right">Your company<br>name and logo</div></div>
+ <table><tbody>${QT.lines.map(([i,q])=>`<tr><td>${CAT[i][0]} × ${q}</td><td class="num" style="text-align:right">${kes(CAT[i][1]*q)}</td></tr>`).join('')}<tr><td><b>Total incl. VAT</b></td><td class="num" style="text-align:right"><b>${kes(t.tot)}</b></td></tr></tbody></table>
+ ${QT.state==='sent'?`<p style="margin:14px 0 8px;color:#5a6684">A 50% deposit of <b style="color:#0b165a">${kes(t.dep)}</b> confirms the job.</p><button class="pbtn" id="qok" style="width:100%;background:#0b165a;color:#fff;border:0;border-radius:12px;padding:12px;font-weight:700;cursor:pointer">Approve and pay deposit by M-Pesa</button>`:
+  QT.state==='paying'?`<p style="margin:14px 0 0;color:#8a5a00"><b>Check your phone</b> and enter your M-Pesa PIN…</p>`:
+  `<div style="margin-top:14px;background:#e3f7ee;border:1px solid #a7e3c7;color:#0f5e3e;border-radius:12px;padding:12px">Approved and signed by ${esc(QT.client)}. Deposit of ${kes(t.dep)} received. The installation has been booked.</div>`}</div>`;
+ const b=$('#qok');if(b)b.onclick=()=>{QT.state='paying';drawC();setTimeout(()=>{QT.state='paid';toast('Deposit received. Job created for the installation team.');drawC()},2600)};
+}
+
+route();
+})();
+</script>
+
+</body>
+</html>
